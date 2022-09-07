@@ -1,0 +1,16 @@
+{
+  "states": {"key": {"key1": "value1"}},
+  "state_attr": ["list", "of", "attribution"],
+  "env_attr": ["attribution", "for", "environment"],
+  "exploration": "epsilon_greedy",
+  "actions": {"key": {"key1": "value1"}},
+  "transition": "file_path (represent the transition between states)",
+  "task_name": "sample",
+  "explore_config": {
+     "distribution": "beta",
+  "epsilon": 0.6,
+  "learning_rate": 0.1,
+  "discount": 0.9,
+    "server_credential": "/Users/glin/credential.txt"
+  }
+}

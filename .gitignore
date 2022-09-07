@@ -1,0 +1,4 @@
+/.idea
+/.pytest_cache
+learn/__pycache__/
+test/__pycache__/
