@@ -3,7 +3,7 @@ import pandas as pd
 
 from learn.agent import Agent
 from learn.exploration import EpsilonGreedyExplorer, UpperConfidenceBoundExplorer, ThompsonSamplingExplorer
-from learn.utils import log, get_utc_timestamp, utc_to_datetime_string, pull_file_with_retry
+from learn.utils import log, get_utc_timestamp, utc_to_datetime_string
 import os
 from pandas import read_parquet
 import random
@@ -15,7 +15,6 @@ def __get_reward_class__(class_name: str):
     :return: Class type of the associated reward class.
     """
     return getattr(sys.modules['learn.reward'], class_name)
-
 
 class Learner:
     def __init__(self, config: dict):
@@ -32,7 +31,6 @@ class Learner:
         self.action_history = os.path.join(self.hadoop_table_folder, self.action_history_name)
         self.knowledge_table = os.path.join(self.hadoop_table_folder, self.knowledge_table_name)
         self.update_content = os.path.join(self.hadoop_table_folder, self.update_content)
-        self.hdfs_client = HdfsClient(user_name=hue_user, hadoop_cluster="sgp", path_to_creds=credential_location)
         log("Start initializing the learner...")
         self.config = config
         self.task_name = self.config['task_name']
