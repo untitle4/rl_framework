@@ -1,7 +1,6 @@
 import pandas as pd
 import time
 from datetime import datetime
-from zapp.hadoop import HdfsClient
 import os
 
 
@@ -23,24 +22,6 @@ def get_utc_timestamp() -> int:
 
 def utc_to_datetime_string(utc_timestamp: int) -> str:
     return str(datetime.fromtimestamp(utc_timestamp))
-
-
-def pull_file_with_retry(src: os.path, des: os.path, retry_num: int, client: HdfsClient):
-    retry_iter = 1
-
-    while retry_iter < retry_num:
-        try:
-            client.download_file(src, des)
-            retry_iter = retry_num
-        except:
-            print("Connection error. retry: ", retry_iter)
-            retry_iter += 1
-
-    if os.path.exists(des):
-        return 1
-    else:
-        return 0
-
 
 def log(msg):
     print(msg)

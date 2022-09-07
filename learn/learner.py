@@ -1,5 +1,4 @@
 import sys
-
 import pandas as pd
 
 from learn.agent import Agent
@@ -8,9 +7,6 @@ from learn.utils import log, get_utc_timestamp, utc_to_datetime_string, pull_fil
 import os
 from pandas import read_parquet
 import random
-from zapp.hadoop.impala_client import ImpalaClient
-from zapp.hadoop import HdfsClient
-
 
 def __get_reward_class__(class_name: str):
     """
