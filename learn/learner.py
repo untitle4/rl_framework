@@ -1,12 +1,16 @@
 import sys
+
 import pandas as pd
 
 from learn.agent import Agent
 from learn.exploration import EpsilonGreedyExplorer, UpperConfidenceBoundExplorer, ThompsonSamplingExplorer
-from learn.utils import log, get_utc_timestamp, utc_to_datetime_string
+from learn.utils import log, get_utc_timestamp, utc_to_datetime_string, pull_file_with_retry, update_file_with_retry
 import os
 from pandas import read_parquet
 import random
+from zapp.hadoop.impala_client import ImpalaClient
+from zapp.hadoop import HdfsClient
+
 
 def __get_reward_class__(class_name: str):
     """
@@ -15,6 +19,7 @@ def __get_reward_class__(class_name: str):
     :return: Class type of the associated reward class.
     """
     return getattr(sys.modules['learn.reward'], class_name)
+
 
 class Learner:
     def __init__(self, config: dict):
@@ -31,16 +36,20 @@ class Learner:
         self.action_history = os.path.join(self.hadoop_table_folder, self.action_history_name)
         self.knowledge_table = os.path.join(self.hadoop_table_folder, self.knowledge_table_name)
         self.update_content = os.path.join(self.hadoop_table_folder, self.update_content)
+        self.hdfs_client = HdfsClient(user_name=hue_user, hadoop_cluster="sgp", path_to_creds=credential_location)
         log("Start initializing the learner...")
         self.config = config
         self.task_name = self.config['task_name']
-        self.local_temp_hist_path = f"/tmp/{self.task_name}/action_hist_parquet.parquet"
-        self.local_temp_knowledge_path = f"/tmp/{self.task_name}/knowledge_parquet.parquet"
-        self.local_temp_content_path = f"/tmp/{self.task_name}/update_content.parquet"
+        self.local_temp_hist_path = f'/tmp/{self.task_name}/action_hist_parquet.parquet'
+        self.local_temp_knowledge_path = f'/tmp/{self.task_name}/knowledge_parquet.parquet'
+        self.local_temp_content_path = f'/tmp/{self.task_name}/update_content.parquet'
+        self.local_dir = f'/tmp/{self.task_name}'
+        if not os.path.exists(self.local_dir):
+            os.mkdir(self.local_dir)
 
         self.setup_history()
 
-        self.config["initial_state"] = random.choice(list(config["states"].keys()))
+        self.config["initial_state"] = list(config["states"].keys())[0]
         self.agent = Agent(config)
         self.explore_config = {}
         self.explorer = None
@@ -105,7 +114,7 @@ class Learner:
             self.explorer = UpperConfidenceBoundExplorer(agent=self.agent, explore_config=self.explore_config)
 
         if self.config['exploration'] == 'thompson_sampling':
-            self.explore_config['distribution'] = self.config['distribution']
+            self.explore_config['distribution'] = self.config['explore_config']['distribution']
             self.explorer = ThompsonSamplingExplorer(agent=self.agent, explore_config=self.explore_config)
 
         if self.explorer is None:
@@ -116,6 +125,7 @@ class Learner:
         Run one step of learning.
         param env_data: Aggregated/Extracted environment representation of a learning problem.
         """
+        # TODO: Error Recover machenism
         log("Learning Start....")
         prev_state, prev_action, curr_state, curr_action, knowledge = \
             self.explorer.learn(agent=self.agent, reward=self.reward, env_data=env_data)
@@ -125,7 +135,7 @@ class Learner:
         cols = ["timestamp", "prev_state", "prev_action", "curr_state", "curr_action"] + self.config['env_attr'] \
                + ['reward']
         data = [self.config['utc'], prev_state, prev_action, curr_state, curr_action] + \
-               env_data.iloc[0].to_list() + [self.reward.get_reward(env_data)]
+               env_data.iloc[0][self.config['env_attr']].to_list() + [self.reward.get_reward(env_data)]
         to_append = pd.DataFrame([data], columns=cols)
 
         if self.config['history'] is None:
@@ -153,10 +163,12 @@ class Learner:
             new_update_content = pd.concat([prev_content_data, to_append])
 
         new_update_content.to_parquet(self.local_temp_content_path)
-        self.hdfs_client.upload_file(self.local_temp_content_path, self.update_content)
+        res = update_file_with_retry(self.local_temp_content_path, self.update_content, 10, self.hdfs_client)
+        assert res == 1
         log("Uploaded new content")
 
         log("Uploading the new history information....")
-        self.hdfs_client.upload_file(self.local_temp_hist_path, self.action_history)
-        self.hdfs_client.upload_file(self.local_temp_knowledge_path, self.knowledge_table)
+        res1 = update_file_with_retry(self.local_temp_hist_path, self.action_history, 10, self.hdfs_client)
+        res2 = update_file_with_retry(self.local_temp_knowledge_path, self.knowledge_table, 10, self.hdfs_client)
+        assert res1 == 1 and res2 == 1
         log("Update uploaded.")
