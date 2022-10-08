@@ -43,3 +43,67 @@ class TestReward(Reward):
             return 0.5
         else:
             return 1
+
+
+class TTLReward(Reward):
+    def __init__(self, env_attr):
+        super().__init__(env_attr)
+
+    def get_reward(self, env: pd.DataFrame):
+        assert set(self.env_attr).issubset(env.keys())
+
+        today_booking_counts = env["today_booking_counts"]
+        daily_uptime_pct = env["daily_uptime_pct"]
+        supplier_avg_bookings_before_today = env["supplier_avg_bookings_before_today"]
+
+        reward = 0
+        if today_booking_counts < supplier_avg_bookings_before_today:
+            reward = reward - 5
+        else:
+            reward = reward + 5
+
+        if daily_uptime_pct >= 0.90:
+            reward = reward + 1
+
+        if daily_uptime_pct < 0.90:
+            reward = reward - 1
+
+        if daily_uptime_pct < 0.80:
+            reward = reward - 2
+
+        if daily_uptime_pct < 0.60:
+            reward = reward - 4
+
+        return reward
+
+
+class TTLRewardTS(Reward):
+    def __init__(self, env_attr):
+        super().__init__(env_attr)
+
+    def get_reward(self, env: pd.Series):
+        assert set(self.env_attr).issubset(env.keys())
+
+        today_booking_counts = env["today_booking_counts"]
+        daily_uptime_pct = env["daily_uptime_pct"]
+        supplier_avg_bookings_before_today = env["supplier_avg_bookings_before_today"]
+
+        reward = 0.5
+        if today_booking_counts < supplier_avg_bookings_before_today:
+            reward = reward - 0.2
+        else:
+            reward = reward + 0.2
+
+        if daily_uptime_pct >= 0.90:
+            reward = reward + 0.1
+
+        if daily_uptime_pct < 0.90:
+            reward = reward - 0.1
+
+        if daily_uptime_pct < 0.80:
+            reward = reward - 0.05
+
+        if daily_uptime_pct < 0.60:
+            reward = reward - 0.1
+
+        return reward

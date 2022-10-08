@@ -68,3 +68,9 @@ class Agent:
 
     def get_next_state(self, state, action):
         return self.transition[state][action]
+
+    def get_prev_env(self):
+        if self.hist is None:
+            return None
+
+        return {attr: self.hist.iloc[-1][attr] for attr in self.env_attr}
