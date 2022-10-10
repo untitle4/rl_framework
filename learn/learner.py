@@ -5,7 +5,7 @@ import pandas as pd
 
 from learn.agent import Agent
 from learn.exploration import EpsilonGreedyExplorer, UpperConfidenceBoundExplorer, ThompsonSamplingExplorer
-from learn.utils import log, get_utc_timestamp, utc_to_datetime_string, get_file_suffix_map,\
+from learn.utils import log, get_utc_timestamp, utc_to_datetime_string, get_file_suffix_map, \
     fetch_explore_config_requirement, FileHandler, to_json, load_json
 import os
 from pandas import read_parquet, read_csv
@@ -27,14 +27,6 @@ class Learner:
         :param config: Dictionary of the configuration.
         """
         assert config.keys().__contains__('transition') and config['transition'] is not None
-        hue_user = "hk-vulcan-svc"
-        credential_location = config['server_credential']
-        if config['client_verbose'] == 0:
-            verbose = False
-        else:
-            verbose = True
-        self.hdfs_client = HdfsClient(user_name=hue_user, hadoop_cluster="sgp",
-                                      path_to_creds=credential_location, verbose=verbose)
         log("Start initializing the learner...")
 
         self.mode = mode
@@ -54,9 +46,7 @@ class Learner:
                 else:
                     self.need_update = False
         suffix_map = get_file_suffix_map(self.config['exploration'])
-        self.file_handler = FileHandler(self.task_name, verbose, hue_user, credential_location, suffix_map)
-        if reset:
-            self.file_handler.reset_tracking_file()
+        self.file_handler = FileHandler(self.task_name, suffix_map)
         self.setup_history()
 
         if not self.config.__contains__("initial_state"):
@@ -74,18 +64,16 @@ class Learner:
         log("Finished initializing Learner")
 
     def setup_history(self):
-        self.file_handler.check_or_create_remote()
-        res_list = self.file_handler.pull_tracking_file()
 
-        if res_list.count(0) > 0:
+        if os.path.exists(self.file_handler.get_local_path("action_hist")):
             print("Fail to pull, initialize with None")
             self.config['history'] = None
             self.config['Knowledge'] = None
             self.config['update_content'] = None
         else:
-            self.config['history'] = read_parquet(self.file_handler.get_local_path("action_hist_parquet"))
-            self.config['knowledge'] = load_json(self.file_handler.get_local_path("knowledge_parquet"))
-            self.config['update_content'] = read_parquet(self.file_handler.get_local_path("update_content"))
+            self.config['history'] = read_csv(self.file_handler.get_local_path("action_hist"))
+            self.config['knowledge'] = load_json(self.file_handler.get_local_path("knowledge"))
+            self.config['update_content'] = read_csv(self.file_handler.get_local_path("update_content"))
 
     def setup_explorer(self):
         """
@@ -106,15 +94,9 @@ class Learner:
         if self.explorer is None:
             sys.exit('Exploration method is not initialized.')
 
-    def update_remote(self):
-        # The file is modified locally then upload
-        log("Uploading remote...")
-        self.file_handler.upload_tracking_file()
-        log("File uploaded.")
-
     def step(self, curr_env):
         # One row of env_data
-        self.agent = Agent(self.config) # Reconfigure agent with new information
+        self.agent = Agent(self.config)  # Reconfigure agent with new information
         self.setup_explorer()
         prev_state, prev_action, curr_state, curr_action, knowledge = \
             self.explorer.learn(agent=self.agent, reward=self.reward, env_data=curr_env)
@@ -177,11 +159,6 @@ class Learner:
 
         assert self.config["update_content"] is not None
 
-        self.config['history'].to_parquet(self.file_handler.get_local_path("action_hist_parquet"))
-        to_json(self.file_handler.get_local_path("knowledge_parquet"), self.config['knowledge'].to_dict())
-        self.config['update_content'].to_parquet(self.file_handler.get_local_path("update_content"))
-
-        if self.need_update:
-            self.update_remote()
-
-        self.file_handler.clear_local_file()
+        self.config['history'].to_csv(self.file_handler.get_local_path("action_hist"))
+        to_json(self.file_handler.get_local_path("knowledge"), self.config['knowledge'].to_dict())
+        self.config['update_content'].to_csv(self.file_handler.get_local_path("update_content"))
