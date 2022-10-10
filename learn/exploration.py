@@ -2,14 +2,16 @@ import collections
 import math
 import sys
 import pandas as pd
-#import torch
+# import torch
 
 from learn.agent import Agent
 from learn.reward import Reward
 import random
 from scipy.stats import beta, norm
-#import torch.nn as nn
-#import torch.nn.functional as F
+
+
+# import torch.nn as nn
+# import torch.nn.functional as F
 
 
 class Explorer:
@@ -295,7 +297,6 @@ class UpperConfidenceBoundExplorer(Explorer):
 
         return recommended_action
 
-
 # class DeepQExplorer(Explorer):
 #     """
 #     Input of the model should be previous environment attribute. (Given current observation, predict the value of reward
@@ -403,7 +404,7 @@ class UpperConfidenceBoundExplorer(Explorer):
 #         return self.select_action_with_inference_result(inference_result)
 
 
-#class Model(nn.Module):
+# class Model(nn.Module):
 #    def __init__(self, num_embedding, num_action):
 #        super().__init__()
 #        self.forward = nn.Linear(num_embedding, 10)  #
