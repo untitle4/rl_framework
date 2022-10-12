@@ -18,7 +18,7 @@ for task in task_name[-1:]:
     test_algo_config['exploration'] = task[5:]
     print(task, task[5:])
 
-    res_table_folder = f"./learn_out"
+    res_table_folder = f"./learn_out/{task}"
     action_history_name = "action_hist_parquet.csv"
     knowledge_table_name = "knowledge_parquet.csv"
     action_history = os.path.join(res_table_folder, action_history_name)

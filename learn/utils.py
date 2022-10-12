@@ -83,7 +83,7 @@ class FileHandler:
         self.tracking_files = [tracking_file + suffix_map[tracking_file] for tracking_file in list(suffix_map.keys())]
         self.suffix_map = suffix_map
         curr_dir = os.getcwd()
-        self.local_dir = os.path.join(curr_dir, 'learning_out')
+        self.local_dir = os.path.join(curr_dir, f'learning_out/{task_name}')
         if not os.path.exists(self.local_dir):
             os.mkdir(self.local_dir)
 
