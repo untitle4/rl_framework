@@ -30,8 +30,7 @@ class TestReward(Reward):
         super().__init__(env_attr)
 
     def get_reward(self, env: pd.DataFrame):
-        assert set(self.env_attr).issubset(env.columns)
-        target = env.iloc[-1]
+        target = env
         p1 = int(target['p1'])
         p2 = int(target['p2'])
         p3 = int(target['p3'])

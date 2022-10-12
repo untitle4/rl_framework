@@ -65,8 +65,8 @@ class Learner:
 
     def setup_history(self):
 
-        if os.path.exists(self.file_handler.get_local_path("action_hist")):
-            print("Fail to pull, initialize with None")
+        if not os.path.exists(self.file_handler.get_local_path("action_hist")):
+            print("Folder not exist, initialize with None")
             self.config['history'] = None
             self.config['Knowledge'] = None
             self.config['update_content'] = None
