@@ -37,10 +37,10 @@ class TestReward(Reward):
         assert p1 + p2 + p3 == 1
 
         if p1 == 1:
-            return 0
+            return -5
         elif p2 == 1:
-            return 0.5
+            return 0
         else:
-            return 1
+            return 5
 
 

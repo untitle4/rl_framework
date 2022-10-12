@@ -26,7 +26,7 @@ def test_script():
         knowledge_table = os.path.join(res_table_folder, knowledge_table_name)
 
         curr_env = pd.DataFrame({'p1': [1], 'p2': [0], 'p3': [0]})
-        for i in range(50):
+        for i in range(500):
             print(f'---------------------------------------------Step {i}'
                   f'-----------------------------------------------------')
             learner = Learner(test_algo_config)
