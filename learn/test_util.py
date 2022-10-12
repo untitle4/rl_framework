@@ -19,7 +19,5 @@ def get_algo_config():
             "discount": 0.9,
             "confidence_bound": 0.5,
             "initial_distribution": {'a': 0, 'b': 10}
-        },
-        "server_credential": "./credential.txt",
-        "client_verbose": 0
+        }
     }
