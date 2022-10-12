@@ -159,6 +159,6 @@ class Learner:
 
         assert self.config["update_content"] is not None
 
-        self.config['history'].to_csv(self.file_handler.get_local_path("action_hist"))
+        self.config['history'].to_csv(self.file_handler.get_local_path("action_hist"), index=False)
         to_json(self.file_handler.get_local_path("knowledge"), self.config['knowledge'].to_dict())
-        self.config['update_content'].to_csv(self.file_handler.get_local_path("update_content"))
+        self.config['update_content'].to_csv(self.file_handler.get_local_path("update_content"), index=False)

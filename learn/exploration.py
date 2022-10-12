@@ -160,9 +160,10 @@ class ThompsonSamplingExplorer(Explorer):
             return a + reward_value, b + (1 - reward_value)
         else:  # TODO: Check how to update normal distribution
             b = b * 0.9  # Find more serious update method
+            action_step = self.agent.get_total_step_action(self.agent.get_prev_action())
             if b < 1:
                 b = 1
-            a = (a * self.total_step + reward_value) / (self.total_step + 1)
+            a = (a * action_step + reward_value) / (action_step + 1)
             return a, b
 
     def select_action(self):

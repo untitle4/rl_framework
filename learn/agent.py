@@ -63,6 +63,9 @@ class Agent:
     def get_total_step(self):
         return len(self.hist)
 
+    def get_total_step_action(self, action):
+        return len(self.hist[self.hist['prev_action'] == action])
+
     def get_total_reward(self):
         return self.hist['reward'].sum()
 

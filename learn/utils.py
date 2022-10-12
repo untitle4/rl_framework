@@ -84,6 +84,8 @@ class FileHandler:
         self.suffix_map = suffix_map
         curr_dir = os.getcwd()
         self.local_dir = os.path.join(curr_dir, f'learning_out/{task_name}')
+        if not os.path.exists(os.path.join(curr_dir, 'learning_out/')):
+            os.mkdir(os.path.join(curr_dir, 'learning_out/'))
         if not os.path.exists(self.local_dir):
             os.mkdir(self.local_dir)
 
