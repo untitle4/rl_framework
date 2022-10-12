@@ -52,6 +52,8 @@ class Learner:
         if not self.config.__contains__("initial_state"):
             self.config["initial_state"] = list(config["states"].keys())[0]
 
+        self.config["initial_state"] = list(config["states"].keys())[0]
+        self.agent = Agent(config)
         self.explore_config = {}
         self.explorer = None
 
