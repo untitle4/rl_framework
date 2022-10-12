@@ -163,7 +163,7 @@ class ThompsonSamplingExplorer(Explorer):
             action_step = self.agent.get_total_step_action(self.agent.get_prev_action())
             if b < 1:
                 b = 1
-            a = (a * (action_step - 1) + reward_value) / action_step
+            a = (a * action_step + reward_value) / (action_step + 1)
             return a, b
 
     def select_action(self):
