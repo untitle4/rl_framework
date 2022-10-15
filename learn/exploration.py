@@ -1,11 +1,17 @@
 import collections
 import math
 import sys
+import pandas as pd
+# import torch
 
 from learn.agent import Agent
 from learn.reward import Reward
 import random
 from scipy.stats import beta, norm
+
+
+# import torch.nn as nn
+# import torch.nn.functional as F
 
 
 class Explorer:
@@ -46,7 +52,7 @@ class EpsilonGreedyExplorer(Explorer):
         super().__init__(explore_config)
         self.explore_config = explore_config
         self.states = list(agent.get_states().keys())
-        self.actions = list(agent.get_actions().keys())
+        self.actions = agent.get_actions()
         self.epsilon = explore_config['epsilon']
         self.alpha = explore_config['learning_rate']
         self.discount = explore_config['discount']
@@ -65,7 +71,6 @@ class EpsilonGreedyExplorer(Explorer):
                     self.Q_table[state][action] = 0  # TODO: Check how to init table
 
     def select_action(self):
-        curr_state = self.agent.get_curr_state()
         if self.agent.get_hist() is None:
             return random.choice(self.possible_actions)
         rand_flag = random.random()
@@ -74,7 +79,7 @@ class EpsilonGreedyExplorer(Explorer):
         else:
             return self.select_max_action(self.agent.get_curr_state())[1]
 
-    def learn(self, agent: Agent, reward: Reward, env_data: dict):
+    def learn(self, agent: Agent, reward: Reward, env_data: pd.DataFrame):
         env_attr = agent.get_env_attr()
         reward_value = reward.get_reward(env_data[env_attr])
         recommended_action = self.recommend(reward_value)
@@ -82,7 +87,7 @@ class EpsilonGreedyExplorer(Explorer):
         return agent.get_prev_state(), agent.get_prev_action(), agent.get_curr_state(), recommended_action, self.Q_table
 
     def select_max_action(self, state):
-        max_val = 0
+        max_val = float('-inf')
         max_action = None
         for action in self.possible_actions:
             if self.Q_table[state][action] >= max_val:
@@ -118,7 +123,6 @@ class ThompsonSamplingExplorer(Explorer):
         super().__init__(explore_config)
         self.explore_config = explore_config
         self.states = agent.get_states()
-        self.actions = agent.get_actions()
         self.distribution_name = explore_config['distribution']
         self.agent = agent
         self.rv = None
@@ -133,9 +137,15 @@ class ThompsonSamplingExplorer(Explorer):
             self.total_reward = agent.get_total_reward()
         else:
             self.distribution = collections.defaultdict(dict)
-            for state in self.states:
-                for action in self.agent.get_transition()[state]:
-                    self.distribution[state][action] = {'a': 1, 'b': 1}
+
+            if self.distribution_name == "beta":
+                for state in self.states:
+                    for action in self.agent.get_transition()[state]:
+                        self.distribution[state][action] = self.explore_config["initial_distribution"]
+            else:
+                for state in self.states:
+                    for action in self.agent.get_transition()[state]:
+                        self.distribution[state][action] = self.explore_config["initial_distribution"]
             self.total_step = 0
             self.total_reward = 0
 
@@ -149,13 +159,16 @@ class ThompsonSamplingExplorer(Explorer):
         if self.distribution_name == 'beta':
             return a + reward_value, b + (1 - reward_value)
         else:  # TODO: Check how to update normal distribution
-            b = 1.0 / ((1 / 100 ** 2) + self.total_step)
-            a = b * self.total_reward
-            return a, math.sqrt(b)
+            b = b * 0.9  # Find more serious update method
+            action_step = self.agent.get_total_step_action(self.agent.get_prev_action(), self.agent.get_prev_action())
+            if b < 1:
+                b = 1
+            a = (a * action_step + reward_value) / (action_step + 1)
+            return a, b
 
     def select_action(self):
         # Calculate expectation for each beta distribution
-        max_e = 0.0
+        max_e = float('-inf')
         max_action = self.possible_actions[0]
 
         for action in self.possible_actions:
@@ -183,7 +196,7 @@ class ThompsonSamplingExplorer(Explorer):
         recommended_action = self.select_action()
         prev_state = self.agent.get_prev_state()
         prev_action = self.agent.get_prev_action()
-
+        print(prev_state, prev_action, reward_value)
         if prev_action is not None:
             prev_a, prev_b = self.distribution[prev_state][prev_action]['a'], \
                              self.distribution[prev_state][prev_action]['b']
@@ -207,7 +220,6 @@ class UpperConfidenceBoundExplorer(Explorer):
         self.explore_config = explore_config
         self.states = agent.get_states()
         self.actions = agent.get_actions()
-        self.epsilon = explore_config['epsilon']
         self.alpha = explore_config['learning_rate']
         self.discount = explore_config['discount']
         self.c = explore_config['confidence_bound']
@@ -250,13 +262,12 @@ class UpperConfidenceBoundExplorer(Explorer):
         env_attr = agent.get_env_attr()
         reward_value = reward.get_reward(env_data[env_attr])
         recommended_action = self.recommend(reward_value)
-        # TODO: Update agent's policy here
         return agent.get_prev_state(), agent.get_prev_action(), agent.get_curr_state(), recommended_action, self.Q_table
 
     def select_max_action(self, state):
-        max_val = 0
+        max_val = float('-inf')
         max_action = None
-        max_q_val = 0
+        max_q_val = float('-inf')
 
         for action in self.possible_actions:
             if self.counter[action] == 0:
@@ -286,3 +297,122 @@ class UpperConfidenceBoundExplorer(Explorer):
                                                                    self.Q_table[prev_state][prev_action])
 
         return recommended_action
+
+# class DeepQExplorer(Explorer):
+#     """
+#     Input of the model should be previous environment attribute. (Given current observation, predict the value of reward
+#     by NN inference)
+#     """
+#
+#     def __init__(self, explore_config: dict, agent: Agent):
+#         super().__init__(explore_config)
+#         assert self.explore_config.__contains__("selection_criteria")  # TODO: Add this to explore config (UCB, EG)
+#         self.explore_config = explore_config
+#         self.states = agent.get_states()
+#         self.actions = agent.get_actions()
+#         self.action_index_map = {self.actions[i]: i for i in range(0, len(self.actions))}
+#         self.curr_state = agent.get_curr_state()
+#         self.possible_actions = list(agent.get_transition()[self.curr_state].keys())
+#         self.agent = agent
+#         self.optimizer = getattr(sys.modules['torch.optim'], self.explore_config['optimizer'])
+#         self.criterion = getattr(sys.modules['torch.nn'], self.explore_config['loss'])
+#         self.discount = self.explore_config['discount']
+#
+#         # TODO: Check this
+#         self.embedding_size = len(self.explore_config['env_attr'])
+#         self.epsilon = self.explore_config['epsilon']
+#         self.c = explore_config['confidence_bound']
+#         self.prev_env = agent.get_prev_env()  # dictionary or None
+#         self.model = agent.get_knowledge()
+#         self.counter = {}
+#
+#         if agent.get_hist() is not None:
+#             self.__generate_counter_from_hist__()
+#         else:
+#             for action in self.actions:
+#                 self.counter[action] = 0.0001
+#                 self.total_step = 0.0001
+#
+#     def __generate_counter_from_hist__(self):
+#         history = self.agent.get_hist()
+#         target = history['curr_action'].to_list()
+#         for entry in target:
+#             self.counter[entry] += 1
+#             self.total_step += 1
+#
+#     def learn(self, agent: Agent, reward: Reward, env_data):
+#         # Reward is ground truth of taking previous action
+#         self.model.eval()
+#         env_attr = agent.get_env_attr()
+#         reward_value = reward.get_reward(env_data[env_attr])
+#
+#         if self.agent.get_prev_state() is None:
+#             recommended_action = random.choice(self.possible_actions)
+#         else:
+#             recommended_action = self.recommend_from_model(env_data[env_attr])
+#
+#         prev_action = agent.get_prev_action()
+#         prev_action_index = self.action_index_map[prev_action]
+#         max_curr = torch.argmax(self.model(env_data[env_attr]))
+#         target_inference_vector = [max_curr * self.discount] * len(self.actions)
+#         target_inference_vector[prev_action_index] += reward_value
+#
+#         # Update model with (prev_state, reward) pair
+#         if agent.get_prev_action() is not None:
+#             self.model.train()
+#             self.optimizer.zero_grad()
+#
+#             outputs = self.model(self.prev_env)
+#             loss = self.criterion(outputs, target_inference_vector)
+#             loss.backward()
+#             self.optimizer.step()
+#
+#             print(loss)
+#
+#         return agent.get_prev_state(), agent.get_prev_action(), agent.get_curr_state(), recommended_action, self.model
+#
+#     def select_action_with_inference_result(self, inference):
+#         if self.agent.get_hist() is None:
+#             return random.choice(self.possible_actions)
+#
+#         # Modify the inference vector according to our chosen selection criteria
+#         if self.explore_config["selection_criteria"] == 'epsilon_greedy':
+#             rand_flag = random.random()
+#             if rand_flag < self.epsilon:
+#                 return random.choice(self.possible_actions)
+#         if self.explore_config["selection_criteria"] == "upper_confidence_bound":
+#             for action in self.possible_actions:
+#                 action_count = self.counter[action]
+#                 if self.total_step >= 1:
+#                     inference[self.action_index_map[action]] += \
+#                         self.c * math.sqrt(math.log2(self.total_step) / action_count)
+#         return self.get_max_from_inference_result(inference)
+#
+#     def get_max_from_inference_result(self, inference):
+#         max_r = float('-inf')
+#         max_a = None
+#         for action in self.possible_actions:
+#             curr_res = inference[self.action_index_map[action]]
+#             if curr_res >= max_r:
+#                 max_a = action
+#                 max_r = curr_res
+#         return max_a
+#
+#     def recommend_from_model(self, env):
+#         self.model.eval()
+#         inference_result = self.model.forward(env)
+#
+#         return self.select_action_with_inference_result(inference_result)
+
+
+# class Model(nn.Module):
+#    def __init__(self, num_embedding, num_action):
+#        super().__init__()
+#        self.forward = nn.Linear(num_embedding, 10)  #
+#        self.output = nn.Linear(10, num_action)
+#        self.relu = nn.ReLU()
+
+#    def forward(self, x):
+#        x = self.forward(x)
+#        x = self.relu(x)
+#        return self.output(x)

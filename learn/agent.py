@@ -63,8 +63,17 @@ class Agent:
     def get_total_step(self):
         return len(self.hist)
 
+    def get_total_step_action(self, action, state):
+        return len(self.hist[(self.hist['prev_action'] == action) & (self.hist['prev_state'] == state)])
+
     def get_total_reward(self):
         return self.hist['reward'].sum()
 
     def get_next_state(self, state, action):
         return self.transition[state][action]
+
+    def get_prev_env(self):
+        if self.hist is None:
+            return None
+
+        return {attr: self.hist.iloc[-1][attr] for attr in self.env_attr}

@@ -30,16 +30,17 @@ class TestReward(Reward):
         super().__init__(env_attr)
 
     def get_reward(self, env: pd.DataFrame):
-        assert set(self.env_attr).issubset(env.columns)
-        target = env.iloc[-1]
+        target = env
         p1 = int(target['p1'])
         p2 = int(target['p2'])
         p3 = int(target['p3'])
         assert p1 + p2 + p3 == 1
 
         if p1 == 1:
-            return 0
+            return -5
         elif p2 == 1:
-            return 0.5
+            return 0
         else:
-            return 1
+            return 5
+
+
