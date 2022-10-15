@@ -1,2 +1,3 @@
 configs:
   sumo_loc: "SUMO_sample"
+  proj_name: "intersection"
