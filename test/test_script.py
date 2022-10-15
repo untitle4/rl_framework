@@ -11,7 +11,7 @@ def test_script():
         shutil.rmtree('./learning_out')
 
     task_name = ['test_epsilon_greedy', 'test_thompson_sampling', 'test_upper_confidence_bound']
-
+    task_name = ['test_thompson_sampling']
     for task in task_name[:]:
 
         test_algo_config = get_algo_config()
