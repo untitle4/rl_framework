@@ -10,17 +10,17 @@ param = [{'duration': '33', 'state': 'GGGrrrGGGrrrrrr'},
         {'duration': '33', 'state': 'rrrrrrrrrGGGGGG'},
         {'duration': '6', 'state': 'rrrrrrrrryyyyyy'}]
 
-def updater(param):
+def update(param_out):
     mytree = ET.parse('intersection.add.xml')
     myroot = mytree.getroot()
 
     i = 0
     for phase in myroot.iter('phase'):
-    
+
         # phase.find('duration').text = str(float(phase.find('duration').text)+10)
 
-        phase.set('duration', param[i]['duration']) 
-        phase.set('state', param[i]['state']) 
+        phase.set('duration', param_out[i]['duration'])
+        phase.set('state', param_out[i]['state'])
         i += 1
 
     # mytree.write('output1.xml')

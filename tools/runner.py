@@ -20,12 +20,12 @@ def checkFileExistence(proj_name):
             sys.exit(1)
 
 
+def run(runner_config):
+    with open(runner_config, "r") as f:
+        config = yaml.safe_load(f)
 
-with open("./configs/config.yaml", "r") as f:
-    config = yaml.safe_load(f)
+    checkFileExistence(config["configs"]["proj_name"])
 
-checkFileExistence(config["configs"]["proj_name"])
-
-subprocess.check_output(f"sumo -c {config['configs']['sumo_loc']}/intersection.sumocfg --queue-output {config['configs']['sumo_loc']}/out.xml", shell=True)
+    subprocess.check_output(f"sumo -c {config['configs']['sumo_loc']}/intersection.sumocfg --queue-output {config['configs']['sumo_loc']}/out.xml", shell=True)
 
 
