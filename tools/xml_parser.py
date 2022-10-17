@@ -239,6 +239,7 @@ def get_options(arglist=None):
                          default=False, help="split in different files for the first hierarchy level")
     optParser.add_option("-o", "--output", help="base name for output")
     options, args = optParser.parse_args(arglist)
+    print(len(args))
     if len(args) != 1:
         optParser.print_help()
         sys.exit()
@@ -260,8 +261,8 @@ def get_options(arglist=None):
     return options
 
 
-def writeCsv(fileName):
-    options = get_options(fileName)
+def writeCsv(args=None):
+    options = get_options(args)
     # get attributes
     attrFinder = AttrFinder(options.xsd, options.source, options.split)
     # write csv
@@ -278,3 +279,5 @@ def writeCsv(fileName):
         xml.sax.parse(options.source, handler)
 
 
+if __name__ == "__main__":
+    writeCsv()
