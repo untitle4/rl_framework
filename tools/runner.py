@@ -3,12 +3,13 @@ import sys
 
 import yaml
 import os
+import xml_parser
 
 # assume your intersection.sumocfg is under SUMO_sample directory
 # the output file will also be generated under that directory
 
 
-def checkFileExistence(proj_name):
+def checkFileExistence(proj_name, config):
     files = []
     for f in os.listdir(f"./{config['configs']['sumo_loc']}"):
         if os.path.isfile(f"./{config['configs']['sumo_loc']}/{f}"):
@@ -24,8 +25,12 @@ def run(runner_config):
     with open(runner_config, "r") as f:
         config = yaml.safe_load(f)
 
-    checkFileExistence(config["configs"]["proj_name"])
+    checkFileExistence(config["configs"]["proj_name"], config)
 
     subprocess.check_output(f"sumo -c {config['configs']['sumo_loc']}/intersection.sumocfg --queue-output {config['configs']['sumo_loc']}/out.xml", shell=True)
+    print("======check out finished======")
+    # xml_parser.writeCsv('out.xml')
+    subprocess.run(f"python tools/xml_parser.py --separator ',' SUMO_sample/out.xml")
 
-
+if __name__ == "__main__":
+    run('configs/config.yaml')
