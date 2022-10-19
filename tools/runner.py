@@ -27,7 +27,7 @@ def run(runner_config):
 
     checkFileExistence(config["configs"]["proj_name"], config)
 
-    # subprocess.check_output(f"sumo -c {config['configs']['sumo_loc']}/intersection.sumocfg --queue-output {config['configs']['sumo_loc']}/out.xml", shell=True)
+    subprocess.check_output(f"sumo -c {config['configs']['sumo_loc']}/intersection.sumocfg --queue-output {config['configs']['sumo_loc']}/out.xml", shell=True)
     print("======check out finished======")
     # xml_parser.writeCsv('out.xml')
     subprocess.run(f"python tools/xml_parser.py --separator ',' SUMO_sample/out.xml")
