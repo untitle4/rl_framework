@@ -3,7 +3,6 @@ import sys
 
 import yaml
 import os
-import xml_parser
 
 # assume your intersection.sumocfg is under SUMO_sample directory
 # the output file will also be generated under that directory

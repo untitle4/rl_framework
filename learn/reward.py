@@ -44,3 +44,14 @@ class TestReward(Reward):
             return 5
 
 
+class IntersectionReward(Reward):
+    def __init__(self, env_attr):
+        super().__init__(env_attr)
+
+    def get_reward(self, env: pd.DataFrame):
+        reward = 0
+        if env['avg_lane_queueing_length'] < env['prev_avg_lane_queueing_length']:
+            reward += 1
+        if env['avg_lane_queueing_time'] < env['prev_avg_lane_queueing_time']:
+            reward += 1
+        return reward
