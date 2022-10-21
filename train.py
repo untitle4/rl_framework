@@ -14,7 +14,7 @@ total_iter = 200
 
 # Initial configuration is should be in /runs/intersection
 runner_config = './configs/config.yaml'
-learning_config = './configs/learning_config'
+learning_config = './configs/learning_config.json'
 
 with open(runner_config, "r") as f:
     runner_config = yaml.safe_load(f)
@@ -24,12 +24,15 @@ with open(learning_config, "r") as f:
 
 runner_config['configs']['sumo_loc'] = 'runs/intersection'
 # Project name won't change
-learning_config['state'], learning_config['transition'] = get_state_transition()
+learning_config['states'], learning_config['transition'] = get_state_transition()
 
 filehandler1 = FileHandler('intersection_0', get_file_suffix_map(learning_config['exploration']))
 filehandler2 = FileHandler('intersection_1', get_file_suffix_map(learning_config['exploration']))
 filehandler3 = FileHandler('intersection_2', get_file_suffix_map(learning_config['exploration']))
 # run(runner_config) # Initial run
+
+os.mkdir(f'./runs/intersection_0')
+shutil.copytree(src=f'./runs/intersection', dst=f'./runs/intersection_0')
 
 for i in range(total_iter):
     print(f'---------------------------Learning start round {i}-----------------------------------------')
@@ -38,7 +41,7 @@ for i in range(total_iter):
     run(runner_config)
 
     if i != 0:
-        env = generate_env(f'runs/intersection_{i}',filehandler.get_local_path('action_hist'))
+        env = generate_env(f'runs/intersection_{i}', filehandler1.get_local_path('action_hist'))
     else:
         env = generate_init_env()
 
@@ -59,7 +62,7 @@ for i in range(total_iter):
     param[4]['duration'] = pd.read_csv(filehandler3.get_local_path('update_content').iloc[-1]['g'])
 
     os.mkdir(f'./runs/intersection_{i+1}')
-    shutil.copytree(src=f'intersection_{i}', dst=f'intersection_{i+1}')
+    shutil.copytree(src=f'./runs/intersection_{i}', dst=f'./runs/intersection_{i+1}')
 
     update(param_out=param, path=f'intersection_{i+1}')
 

@@ -20,9 +20,9 @@ def checkFileExistence(proj_name, config):
             sys.exit(1)
 
 
-def run(runner_config):
-    with open(runner_config, "r") as f:
-        config = yaml.safe_load(f)
+def run(config):
+    # with open(runner_config, "r") as f:
+    #     config = yaml.safe_load(f)
 
     checkFileExistence(config["configs"]["proj_name"], config)
 
