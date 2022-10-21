@@ -139,11 +139,12 @@ class ThompsonSamplingExplorer(Explorer):
             self.distribution = collections.defaultdict(dict)
 
             if self.distribution_name == "beta":
-                for state in self.states:
+                for state in self.states.keys():
                     for action in self.agent.get_transition()[state]:
                         self.distribution[state][action] = self.explore_config["initial_distribution"]
             else:
-                for state in self.states:
+                print(self.states)
+                for state in self.states.keys():
                     for action in self.agent.get_transition()[state]:
                         self.distribution[state][action] = self.explore_config["initial_distribution"]
             self.total_step = 0
@@ -198,13 +199,14 @@ class ThompsonSamplingExplorer(Explorer):
         prev_action = self.agent.get_prev_action()
         print(prev_state, prev_action, reward_value)
         if prev_action is not None:
-            prev_a, prev_b = self.distribution[prev_state][prev_action]['a'], \
-                             self.distribution[prev_state][prev_action]['b']
+            print(self.distribution)
+            prev_a, prev_b = self.distribution[str(prev_state)][prev_action]['a'], \
+                             self.distribution[str(prev_state)][prev_action]['b']
             # Update the distribution
 
             a, b = self.__update_param__(prev_a, prev_b, reward_value)
 
-            self.distribution[prev_state][prev_action]['a'], self.distribution[prev_state][prev_action]['b'] = a, b
+            self.distribution[str(prev_state)][prev_action]['a'], self.distribution[str(prev_state)][prev_action]['b'] = a, b
 
         return recommended_action
 

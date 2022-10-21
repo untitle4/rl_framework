@@ -6,7 +6,7 @@ def get_state_transition():
     interval = 5
     actions = ["K", "I", "D"]
     states = {}
-    for i in range(light_time_range[1] - light_time_range[0]):
+    for i in range(int((light_time_range[1] - light_time_range[0]) / interval) + 1):
         states[str(i)] = {'g': light_time_range[0] + i * interval}
     transition = collections.defaultdict(dict)
 
@@ -15,7 +15,7 @@ def get_state_transition():
             if action == 'K':
                 transition[state][action] = state
             elif action == 'I':
-                if states[state]['g'] == 40:
+                if states[state]['g'] == 60:
                     continue
                 else:
                     transition[state][action] = str(int(state) + 1)
@@ -24,7 +24,7 @@ def get_state_transition():
                     continue
                 else:
                     transition[state][action] = str(int(state) - 1)
-    return transition, state
+    return transition, states
 
 
 

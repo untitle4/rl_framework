@@ -9,11 +9,11 @@
     "avg_lane_queueing_length",
     "avg_lane_queueing_time",
     "prev_avg_lane_queueing_length",
-    "prev_avg_queuing_time"
+    "prev_avg_lane_queueing_time"
   ],
   "exploration": "thompson_sampling",
   "actions": [
-
+    "K", "I", "D"
   ],
   "transition": {
   },
