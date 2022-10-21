@@ -25,8 +25,8 @@ with open(learning_config, "r") as f:
 runner_config['configs']['sumo_loc'] = 'runs/intersection'
 # Project name won't change
 learning_config['transition'], learning_config['states'] = get_state_transition()
-print(learning_config['states'])
-print(learning_config['transition'])
+# print(learning_config['states'])
+# print(learning_config['transition'])
 filehandler1 = FileHandler('intersection_0', get_file_suffix_map(learning_config['exploration']))
 filehandler2 = FileHandler('intersection_1', get_file_suffix_map(learning_config['exploration']))
 filehandler3 = FileHandler('intersection_2', get_file_suffix_map(learning_config['exploration']))
@@ -51,7 +51,7 @@ for i in range(total_iter):
         env = generate_init_env()
 
     print('Fetched environment: ')
-    print(len(env))
+    # print(len(env))
     print(env)
 
     for j in range(3):

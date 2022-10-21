@@ -5,3 +5,4 @@ test/__pycache__/
 /.vscode
 .DS_Store
 /runs
+/learning_out
