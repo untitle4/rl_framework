@@ -68,7 +68,7 @@ class EpsilonGreedyExplorer(Explorer):
             self.Q_table = collections.defaultdict(dict)
             for state in self.states:
                 for action in agent.get_transition()[state]:
-                    self.Q_table[state][action] = 0  # TODO: Check how to init table
+                    self.Q_table[str(state)][action] = 0  # TODO: Check how to init table
 
     def select_action(self):
         if self.agent.get_hist() is None:
@@ -90,8 +90,8 @@ class EpsilonGreedyExplorer(Explorer):
         max_val = float('-inf')
         max_action = None
         for action in self.possible_actions:
-            if self.Q_table[state][action] >= max_val:
-                max_val = self.Q_table[state][action]
+            if self.Q_table[str(state)][action] >= max_val:
+                max_val = self.Q_table[str(state)][action]
                 max_action = action
         return max_val, max_action
 
@@ -103,8 +103,8 @@ class EpsilonGreedyExplorer(Explorer):
         max_val, _ = self.select_max_action(curr_state)
         if prev_state is not None:  # Update only from second run onwards
             # Update Q_value for prev state according to current observation
-            self.Q_table[prev_state][prev_action] += self.alpha * (reward_value + self.discount * max_val -
-                                                                   self.Q_table[prev_state][prev_action])
+            self.Q_table[str(prev_state)][prev_action] += self.alpha * (reward_value + self.discount * max_val -
+                                                                   self.Q_table[str(prev_state)][prev_action])
 
         return recommended_action
 
@@ -139,11 +139,12 @@ class ThompsonSamplingExplorer(Explorer):
             self.distribution = collections.defaultdict(dict)
 
             if self.distribution_name == "beta":
-                for state in self.states:
+                for state in self.states.keys():
                     for action in self.agent.get_transition()[state]:
                         self.distribution[state][action] = self.explore_config["initial_distribution"]
             else:
-                for state in self.states:
+                print(self.states)
+                for state in self.states.keys():
                     for action in self.agent.get_transition()[state]:
                         self.distribution[state][action] = self.explore_config["initial_distribution"]
             self.total_step = 0
@@ -160,7 +161,8 @@ class ThompsonSamplingExplorer(Explorer):
             return a + reward_value, b + (1 - reward_value)
         else:  # TODO: Check how to update normal distribution
             b = b * 0.9  # Find more serious update method
-            action_step = self.agent.get_total_step_action(self.agent.get_prev_action(), self.agent.get_prev_action())
+            action_step = self.agent.get_total_step_action(self.agent.get_prev_action(), self.agent.get_prev_state())
+            print(action_step)
             if b < 1:
                 b = 1
             a = (a * action_step + reward_value) / (action_step + 1)
@@ -198,13 +200,14 @@ class ThompsonSamplingExplorer(Explorer):
         prev_action = self.agent.get_prev_action()
         print(prev_state, prev_action, reward_value)
         if prev_action is not None:
-            prev_a, prev_b = self.distribution[prev_state][prev_action]['a'], \
-                             self.distribution[prev_state][prev_action]['b']
+            print(self.distribution)
+            prev_a, prev_b = self.distribution[str(prev_state)][prev_action]['a'], \
+                             self.distribution[str(prev_state)][prev_action]['b']
             # Update the distribution
 
             a, b = self.__update_param__(prev_a, prev_b, reward_value)
 
-            self.distribution[prev_state][prev_action]['a'], self.distribution[prev_state][prev_action]['b'] = a, b
+            self.distribution[str(prev_state)][prev_action]['a'], self.distribution[str(prev_state)][prev_action]['b'] = a, b
 
         return recommended_action
 
@@ -240,7 +243,7 @@ class UpperConfidenceBoundExplorer(Explorer):
             self.Q_table = collections.defaultdict(dict)
             for state in self.states:
                 for action in agent.get_transition()[state]:
-                    self.Q_table[state][action] = 0
+                    self.Q_table[str(state)][action] = 0
             for action in self.actions:
                 self.counter[action] = 0.0001
                 self.total_step = 0.0001
@@ -268,20 +271,20 @@ class UpperConfidenceBoundExplorer(Explorer):
         max_val = float('-inf')
         max_action = None
         max_q_val = float('-inf')
-
         for action in self.possible_actions:
-            if self.counter[action] == 0:
-                action_count = 0.001
+            if self.agent.get_hist() is None:
+                action_count = 0.00001
             else:
-                action_count = self.counter[action]
+                action_count = self.agent.get_total_step_action(action, int(state)) + 0.0001
+
             if self.total_step >= 1:
-                val = self.Q_table[state][action] + self.c * math.sqrt(math.log2(self.total_step) / action_count)
+                val = self.Q_table[str(state)][action] + self.c * math.sqrt(math.log2(self.total_step) / action_count)
             else:
-                val = self.Q_table[state][action]
+                val = self.Q_table[str(state)][action]
             if val >= max_val:
                 max_val = val
                 max_action = action
-                max_q_val = self.Q_table[state][action]
+                max_q_val = self.Q_table[str(state)][action]
         return max_q_val, max_action
 
     def recommend(self, reward_value):
@@ -293,8 +296,8 @@ class UpperConfidenceBoundExplorer(Explorer):
 
         # Update Q_value for prev state according to current observation
         if prev_state is not None:
-            self.Q_table[prev_state][prev_action] += self.alpha * (reward_value + self.discount * max_val -
-                                                                   self.Q_table[prev_state][prev_action])
+            self.Q_table[str(prev_state)][prev_action] += self.alpha * (reward_value + self.discount * max_val -
+                                                                   self.Q_table[str(prev_state)][prev_action])
 
         return recommended_action
 

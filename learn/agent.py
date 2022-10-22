@@ -44,7 +44,7 @@ class Agent:
     def get_curr_state(self):
         if self.hist is None:
             return self.init_state
-        return self.transition[self.get_prev_state()][self.get_prev_action()]
+        return self.transition[str(self.get_prev_state())][self.get_prev_action()]
 
     def get_prev_state(self):
         if self.hist is None:
