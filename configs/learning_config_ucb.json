@@ -1,0 +1,33 @@
+{
+  "states": {
+
+  },
+  "state_attr": [
+    "g"
+  ],
+  "env_attr": [
+    "avg_lane_queueing_length",
+    "avg_lane_queueing_time",
+    "prev_avg_lane_queueing_length",
+    "prev_avg_lane_queueing_time"
+  ],
+  "exploration": "upper_confidence_bound",
+  "actions": [
+    "K", "I", "D"
+  ],
+  "transition": {
+  },
+  "task_name": "intersection_opt",
+  "reward": "IntersectionReward",
+  "explore_config": {
+    "distribution": "normal",
+    "epsilon": 0.7,
+    "learning_rate": 0.1,
+    "discount": 0.9,
+    "confidence_bound": 0.5,
+    "initial_distribution": {
+      "a": 0,
+      "b": 10
+    }
+  }
+}

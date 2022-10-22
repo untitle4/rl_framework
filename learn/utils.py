@@ -73,7 +73,7 @@ def get_file_suffix_map(learning_method):
 
 # TODO: Adapt this to the framework
 class FileHandler:
-    def __init__(self, task_name, suffix_map):
+    def __init__(self, task_name, suffix_map, experiment_folder):
         """
         Initialize the file handler
         :param tracking_files: The file list that needs to be tracked.
@@ -82,7 +82,7 @@ class FileHandler:
         """
         self.tracking_files = [tracking_file + suffix_map[tracking_file] for tracking_file in list(suffix_map.keys())]
         self.suffix_map = suffix_map
-        curr_dir = os.getcwd()
+        curr_dir = experiment_folder
         self.local_dir = os.path.join(curr_dir, f'learning_out/{task_name}')
         if not os.path.exists(os.path.join(curr_dir, 'learning_out/')):
             os.mkdir(os.path.join(curr_dir, 'learning_out/'))

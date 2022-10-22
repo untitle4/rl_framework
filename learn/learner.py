@@ -21,7 +21,7 @@ def __get_reward_class__(class_name: str):
 
 
 class Learner:
-    def __init__(self, config: dict, mode="online", ask_update=True, reset=False):
+    def __init__(self, config: dict, experiment_folder=os.getcwd(), mode="online", ask_update=True, reset=False):
         """
         Initialize the learner with configuration file.
         :param config: Dictionary of the configuration.
@@ -30,7 +30,6 @@ class Learner:
         log("Start initializing the learner...")
 
         self.mode = mode
-
         self.config = config
         self.task_name = self.config['task_name']
         self.config['history'] = None
@@ -46,7 +45,7 @@ class Learner:
                 else:
                     self.need_update = False
         suffix_map = get_file_suffix_map(self.config['exploration'])
-        self.file_handler = FileHandler(self.task_name, suffix_map)
+        self.file_handler = FileHandler(self.task_name, suffix_map, experiment_folder)
         self.setup_history()
 
         if not self.config.__contains__("initial_state"):
