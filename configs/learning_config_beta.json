@@ -11,7 +11,7 @@
     "prev_avg_lane_queueing_length",
     "prev_avg_lane_queueing_time"
   ],
-  "exploration": "upper_confidence_bound",
+  "exploration": "thompson_sampling",
   "actions": [
     "K", "I", "D"
   ],
@@ -20,11 +20,11 @@
   "task_name": "intersection_opt",
   "reward": "IntersectionReward",
   "explore_config": {
-    "distribution": "normal",
+    "distribution": "beta",
     "epsilon": 0.7,
     "learning_rate": 0.1,
     "discount": 0.9,
-    "confidence_bound": 0.9,
+    "confidence_bound": 0.5,
     "initial_distribution": {
       "a": 0,
       "b": 10

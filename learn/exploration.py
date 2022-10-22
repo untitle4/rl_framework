@@ -161,7 +161,8 @@ class ThompsonSamplingExplorer(Explorer):
             return a + reward_value, b + (1 - reward_value)
         else:  # TODO: Check how to update normal distribution
             b = b * 0.9  # Find more serious update method
-            action_step = self.agent.get_total_step_action(self.agent.get_prev_action(), self.agent.get_prev_action())
+            action_step = self.agent.get_total_step_action(self.agent.get_prev_action(), self.agent.get_prev_state())
+            print(action_step)
             if b < 1:
                 b = 1
             a = (a * action_step + reward_value) / (action_step + 1)
@@ -270,12 +271,12 @@ class UpperConfidenceBoundExplorer(Explorer):
         max_val = float('-inf')
         max_action = None
         max_q_val = float('-inf')
-
         for action in self.possible_actions:
-            if self.counter[action] == 0:
-                action_count = 0.001
+            if self.agent.get_hist() is None:
+                action_count = 0.00001
             else:
-                action_count = self.counter[action]
+                action_count = self.agent.get_total_step_action(action, int(state)) + 0.0001
+
             if self.total_step >= 1:
                 val = self.Q_table[str(state)][action] + self.c * math.sqrt(math.log2(self.total_step) / action_count)
             else:
