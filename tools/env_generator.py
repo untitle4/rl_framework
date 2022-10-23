@@ -10,7 +10,7 @@ def generate_env(path, history_path):
     env = {'avg_lane_queueing_length': [res['lane_queueing_length'].mean(skipna=True)],
            'avg_lane_queueing_time': [res['lane_queueing_time'].mean(skipna=True)],
            'prev_avg_lane_queueing_length': [hist.iloc[-1]['avg_lane_queueing_length']],
-           'prev_avg_lane_queueing_time': [hist.iloc[-1]['avg_lane_queueing_length']]}
+           'prev_avg_lane_queueing_time': [hist.iloc[-1]['avg_lane_queueing_time']]}
 
     return pd.DataFrame.from_dict(env)
 
