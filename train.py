@@ -11,13 +11,13 @@ import shutil
 from tools.env_generator import generate_env, generate_init_env
 import argparse
 
-total_iter = 2000
-
 parser = argparse.ArgumentParser(description='Experiment Config')
 parser.add_argument('--ename', dest='experiment_name', type=str)
 parser.add_argument('--lconfig', dest='learning_config_path', type=str)
+parser.add_argument('--iter', dest='learning_iteration', type=int, default=1000)
 args = parser.parse_args()
 
+total_iter = args.learning_iteration
 experiment_path = args.experiment_name
 learning_config = args.learning_config_path
 # Initial configuration is should be in /runs/intersection
