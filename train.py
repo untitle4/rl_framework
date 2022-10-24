@@ -47,19 +47,19 @@ filehandler2.clear_local_file()
 filehandler3.clear_local_file()
 # run(runner_config) # Initial run
 
-shutil.copytree(src=f'{experiment_path}/runs/intersection',
-                dst=f'{experiment_path}/runs/intersection_0', dirs_exist_ok=True)
+# shutil.copytree(src=f'{experiment_path}/runs/intersection',
+#                 dst=f'{experiment_path}/runs/intersection_0', dirs_exist_ok=True)
 
 for i in range(total_iter):
     print(f'---------------------------Learning start round {i}-----------------------------------------')
-    runner_config['configs']['sumo_loc'] += '_' + str(i)
+    # runner_config['configs']['sumo_loc'] += '_' + str(i)
 
     print('Running Simulation....')
-    run(runner_config, f'{experiment_path}/runs/intersection_{i}/out.xml')
+    run(runner_config, f'{experiment_path}/runs/intersection/out.xml')
     print('Simulation ended.')
 
     if i != 0:
-        env = generate_env(f'{experiment_path}/runs/intersection_{i}', filehandler1.get_local_path('action_hist'))
+        env = generate_env(f'{experiment_path}/runs/intersection', filehandler1.get_local_path('action_hist'))
     else:
         env = generate_init_env()
 
@@ -89,14 +89,14 @@ for i in range(total_iter):
 
     # if not os.path.exists(f'./runs/intersection_{i + 1}'):
     #     os.mkdir(f'./runs/intersection_{i + 1}')
-    shutil.copytree(src=f'{experiment_path}/runs/intersection_{i}', dst=f'{experiment_path}/runs/intersection_{i+1}',
-                    dirs_exist_ok=True)
+    # shutil.copytree(src=f'{experiment_path}/runs/intersection_{i}', dst=f'{experiment_path}/runs/intersection_{i+1}',
+    #                 dirs_exist_ok=True)
 
-    update(param_out=param, in_path=f'{experiment_path}/runs/intersection_{i}',
-           out_path=f'{experiment_path}/runs/intersection_{i+1}')
+    update(param_out=param, in_path=f'{experiment_path}/runs/intersection',
+           out_path=f'{experiment_path}/runs/intersection')
 
     # Revert back
-    runner_config['configs']['sumo_loc'] = runner_config['configs']['sumo_loc'].rsplit('_', maxsplit=1)[0]
+    # runner_config['configs']['sumo_loc'] = runner_config['configs']['sumo_loc'].rsplit('_', maxsplit=1)[0]
 
     print(f'Finished round {i}')
 

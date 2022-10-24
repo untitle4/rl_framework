@@ -38,25 +38,31 @@ runner_config['configs']['sumo_loc'] = f'{experiment_path}/runs/intersection'
 # Project name won't change
 learning_config['transition'], learning_config['states'] = get_compose_state_transition()
 learning_config['state_attr'] = ['g1', 'g2', 'g3']
+
+actions = ['K', 'I', 'D']
+learning_config['actions'] = []
+for a1 in actions:
+    for a2 in actions:
+        for a3 in actions:
+            learning_config['actions'].append(a1+a2+a3)
 # print(learning_config['states'])
 # print(learning_config['transition'])
 filehandler = FileHandler('intersection_compose', get_file_suffix_map(learning_config['exploration']), experiment_path)
 filehandler.clear_local_file()
 # run(runner_config) # Initial ru
 
-shutil.copytree(src=f'{experiment_path}/runs/intersection',
-                dst=f'{experiment_path}/runs/intersection_0', dirs_exist_ok=True)
+# shutil.copytree(src=f'{experiment_path}/runs/intersection',
+#                 dst=f'{experiment_path}/runs/intersection_0', dirs_exist_ok=True)
 
 for i in range(total_iter):
     print(f'---------------------------Learning start round {i}-----------------------------------------')
-    runner_config['configs']['sumo_loc'] += '_' + str(i)
 
     print('Running Simulation....')
-    run(runner_config, f'{experiment_path}/runs/intersection_{i}/out.xml')
+    run(runner_config, f'{experiment_path}/runs/intersection/out.xml')
     print('Simulation ended.')
 
     if i != 0:
-        env = generate_env(f'{experiment_path}/runs/intersection_{i}', filehandler.get_local_path('action_hist'))
+        env = generate_env(f'{experiment_path}/runs/intersection', filehandler.get_local_path('action_hist'))
     else:
         env = generate_init_env()
 
@@ -85,14 +91,14 @@ for i in range(total_iter):
 
     # if not os.path.exists(f'./runs/intersection_{i + 1}'):
     #     os.mkdir(f'./runs/intersection_{i + 1}')
-    shutil.copytree(src=f'{experiment_path}/runs/intersection_{i}', dst=f'{experiment_path}/runs/intersection_{i+1}',
-                    dirs_exist_ok=True)
+    # shutil.copytree(src=f'{experiment_path}/runs/intersection', dst=f'{experiment_path}/runs/intersection',
+    #                 dirs_exist_ok=True)
 
-    update(param_out=param, in_path=f'{experiment_path}/runs/intersection_{i}',
-           out_path=f'{experiment_path}/runs/intersection_{i+1}')
+    update(param_out=param, in_path=f'{experiment_path}/runs/intersection',
+           out_path=f'{experiment_path}/runs/intersection')
 
     # Revert back
-    runner_config['configs']['sumo_loc'] = runner_config['configs']['sumo_loc'].rsplit('_', maxsplit=1)[0]
+    # runner_config['configs']['sumo_loc'] = runner_config['configs']['sumo_loc'].rsplit('_', maxsplit=1)[0]
 
     print(f'Finished round {i}')
 
